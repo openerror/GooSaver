@@ -13,38 +13,33 @@ class UberWrapper(object):
         self.client = UberRidesClient(self.session)
         
     def getPrices(self, origin, destination, seats=1):
-        ''' origin, destination: tuples of (longtitude, latitude) '''
+        ''' origin, destination: tuples of (longtitude, latitude) 
+        
+            response contains a bunch of dict objects, each for an Uber product
+            The low_estimate, high_estimate keys give the price
+            'duration' key gives estimated time in secs
+        '''
         
         response = self.client.get_price_estimates(start_latitude=origin[0],
                                               start_longitude=origin[1],
                                               end_latitude=destination[0],
                                               end_longitude=destination[1],
                                               seat_count=seats)
-        
-        ''' Below are a bunch of dict objects 
-            The low_estimate, high_estimate keys give the price
-            'duration' key gives estimated time in secs
-        '''
-        
-        estimate = response.json.get('prices')
-        uberPool = estimate[0]
-        uberX = estimate[1]
-#        uberEspanol = estimate[2]
-#        uberSelect = estimate[3]
-#        uberXL = estimate[4]
-#        uberBlack = estimate[5]
-#        uberSUV = estimate[6]
-#        uberLUX = estimate[7]
-#        uberAssist = estimate[8]
-#        uberWAV = estimate[9]
-
-        print('UberPOOL costs {}. Duration: {}'.format(uberPool['estimate'], uberPool['duration']))
-        print('UberX costs {}. Duration: {}'.format(uberX['estimate'], uberX['duration']))
-        
+        estimate = response.json.get('prices')        
         return estimate
+    
+    def getWaitTime(self, origin, seats = 1):
+        ''' origin, destination: tuples of (longtitude, latitude) '''
         
-    def getTime(self, origin):
-        response = self.client.get_products(origin[0], origin[1])
-        products = response.json.get('products')
-        
-        return products
+        response = self.client.get_pickup_time_estimates(origin[0], origin[1]).json
+        waitTime = [product['estimate'] for product in response['times']]
+        return waitTime
+
+s = UberWrapper("wisG3tcaRLg2sFZ49g042Bi47RvoOgDWXs-avv8h")
+prices = s.getPrices((34.1439075,-118.1181612), (34.0302899, -118.2870592))
+
+#r = s.client.estimate_ride(start_latitude=34.0224,
+#                       start_longitude=-118.2851,
+#                       end_latitude=34.1438,
+#                       end_longitude=-118.1182,
+#                       seat_count=1)

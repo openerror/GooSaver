@@ -18,28 +18,47 @@ class MapWrapper(object):
         geocode_result = self.gmaps.geocode(place)
         lat = geocode_result[0]['geometry']['location']['lat']
         lng = geocode_result[0]['geometry']['location']['lng']
+                
         return (lat, lng)
     
-    def queryTrip(self, origin, destination, departAt):
-        result = self.gmaps.directions(origin,
-                                  destination,
-                                  mode = "transit",
-                                  transit_mode = "rail",
-                                  departure_time = departAt)
+    def queryTrip(self, origin, destination, departAt, preferRail=False):
+        if preferRail:
+            mode = ["rail"]
+        else:
+            mode = ["rail", "bus"]
+            
+        result = self.gmaps.directions(origin, destination, mode = "transit",
+                                       transit_mode = mode,
+                                       alternatives = False,
+                                       departure_time = departAt)
         return result
         
-    def countLegs(self, direction_results):
-        print("Google has given {} suggestions".format(len(direction_results)))
+    def extractSteps(self, advice):
+        steps = advice['legs'][0]['steps'] 
+        stepDurations = [s['duration']['value'] for s in steps]
+        return steps, stepDurations
+    
+    def extractTransportMode(self, steps, index):
+        ''' 
+            Extract from a specified step mode of transit (walking / a certain public transit line)   
         
-        for suggestion in direction_results:
-            leg_data = suggestion["legs"]
-            eta_date = date.fromtimestamp(leg_data[-1]["arrival_time"]["value"])
-            eta_time_text = leg_data[-1]["arrival_time"]["text"]
+            'steps' is a list extracted from the advice['legs'][index]['steps']
+            'steps' contains detailed information on each segment of the trip
+                - where/when to begin/stop
+                - transfer instructions (with human readable text)
+                - the line of transit service used
+        '''
         
-            eta_time_value = leg_data[-1]["arrival_time"]["value"]
-            dep_time_value = leg_data[0]["departure_time"]["value"]
-            travel_duration = eta_time_value - dep_time_value
-        
-            print("\nTrip consists of {} legs".format(len(leg_data)))
-            print("Estimated arrival time: {} {}".format(eta_date, eta_time_text))
-            print("Estimated travel duration: {:.3f} hours".format(travel_duration/3600))
+        s = steps[index]
+        try:
+            transit_details = s['transit_details']
+            mode = transit_details['line']['name'] 
+
+            # If bus, must append additional info
+            if mode == "Metro Local Line":
+                mode += ' (' + transit_details['line']['short_name'] + ')'
+            return mode
+            
+        except KeyError:
+            mode = "WALKING"
+            return mode
