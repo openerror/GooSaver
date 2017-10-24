@@ -41,11 +41,13 @@ def main(origin, destination, departAt = datetime.now()):
         # If the two coincide, optimize by the former (an arbitary choice)
         for advice in end2end_directions:
             end2end_duration = advice['legs'][0]['duration']['value']
-            steps, stepDurations = mapObj.extractSteps(advice) #TODO extract the distance travelled, too
+            steps, durations, distances = mapObj.extractSteps(advice) #TODO extract the distance travelled, too
 
-            longestStepDuration = max(stepDurations)
-            longestStepIndex = stepDurations.index(longestStepDuration)
+            longestStepDuration = max(durations)
+            longestStepIndex = durations.index(longestStepDuration)
             mode = mapObj.extractTransportMode(steps, longestStepIndex)
+            
+            mapObj.optimize_length(advice)
 
             print("Using only public transit, the entire trip takes {}.".format(printTime(end2end_duration)))
             print("Segment {} takes the longest, at {}, using {}.".format(longestStepIndex+1,

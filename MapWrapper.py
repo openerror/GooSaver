@@ -13,7 +13,11 @@ class MapWrapper(object):
         self.gmaps = googlemaps.Client(key)
 
     def optimize_length(self, advice):
-        pass
+        steps, durations, distances = self.extractSteps(advice)
+        
+        maxDistance = max(distances)
+        maxDistanceIndex = distances.index(maxDistance)
+        print("The longest trip (by distance) is segment %i" %(maxDistanceIndex+1))
 
     def optimize_time(self, advice):
         pass
@@ -41,8 +45,9 @@ class MapWrapper(object):
 
     def extractSteps(self, advice):
         steps = advice['legs'][0]['steps']
-        stepDurations = [s['duration']['value'] for s in steps]
-        return steps, stepDurations
+        durations = [s['duration']['value'] for s in steps] # in secs
+        distances = [s['distance']['value'] for s in steps] # in meters
+        return steps, durations, distances
 
     def extractTransportMode(self, steps, index):
         '''

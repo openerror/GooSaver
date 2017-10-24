@@ -34,12 +34,3 @@ class UberWrapper(object):
         response = self.client.get_pickup_time_estimates(origin[0], origin[1]).json
         waitTime = [product['estimate'] for product in response['times']]
         return waitTime
-
-s = UberWrapper("wisG3tcaRLg2sFZ49g042Bi47RvoOgDWXs-avv8h")
-prices = s.getPrices((34.1439075,-118.1181612), (34.0302899, -118.2870592))
-
-#r = s.client.estimate_ride(start_latitude=34.0224,
-#                       start_longitude=-118.2851,
-#                       end_latitude=34.1438,
-#                       end_longitude=-118.1182,
-#                       seat_count=1)
