@@ -1,14 +1,14 @@
-from time import time
 from datetime import datetime
 from UberWrapper import UberWrapper
 from MapWrapper import MapWrapper
 from misc import printTime, printUberPrices, displayTrip
+from methods import optimizeByLength, optimizeByTime
 
 uber_token="wisG3tcaRLg2sFZ49g042Bi47RvoOgDWXs-avv8h"
 google_key="AIzaSyD6n0hcRjovaiDrMOhgFuk4iGA7SjJOS0U"
 
 def main(origin, destination, departAt = datetime.now()):
-    # Create google object and make a query
+    # Create google and Uber objects
     mapObj = MapWrapper(google_key)
     uberObj = UberWrapper(uber_token)
 
@@ -39,45 +39,24 @@ def main(origin, destination, departAt = datetime.now()):
         # Find the longest segment --- by duration AND distance, respectively
         # Then, determine the mode of transport and duration of travel
         # If the two coincide, optimize by the former (an arbitary choice)
+        
         for advice in end2end_directions:
+            # First, display info regarding public-transit-only trip, for comparison
             end2end_duration = advice['legs'][0]['duration']['value']
-            steps, durations, distances = mapObj.extractSteps(advice) #TODO extract the distance travelled, too
+            steps, durations, distances = mapObj.extractSteps(advice) 
 
             longestStepDuration = max(durations)
             longestStepIndex = durations.index(longestStepDuration)
             mode = mapObj.extractTransportMode(steps, longestStepIndex)
             
-            mapObj.optimize_length(advice)
-
             print("Using only public transit, the entire trip takes {}.".format(printTime(end2end_duration)))
             print("Segment {} takes the longest, at {}, using {}.".format(longestStepIndex+1,
                                                                          printTime(longestStepDuration),
                                                                          mode))
-            if mode != "WALKING":
-                transitDetails = steps[longestStepIndex]['transit_details']
-                coordKeys = ('lat', 'lng')
-
-                departLat, departLng = [ transitDetails['departure_stop']['location'][c] for c in coordKeys ]
-                arriveLat, arriveLng = [ transitDetails['arrival_stop']['location'][c] for c in coordKeys ]
-                departStation = transitDetails['departure_stop']['name']
-
-                print("Riding Uber to the beginning of segment {}, {}, costs".format(longestStepIndex+1,
-                                                                                      departStation))
-                replacement_est = uberObj.getPrices(origin_c, (departLat, departLng))
-                printUberPrices(replacement_est)
-
-                # Determine transit durations BEFORE and AFTER Uber segment
-                uberDuration = replacement_est[0]['duration'] #Same for all Uber types
-                waitDuration = uberObj.getWaitTime(origin_c)
-
-                afterUber_result = mapObj.queryTrip((arriveLat, arriveLng),
-                                                    destination,
-                                                    time() + uberDuration)
-
-                afterUberDuration = afterUber_result[0]['legs'][0]['duration']['value']
-
-                totalDuration = [wait+uberDuration+longestStepDuration+afterUberDuration for wait in waitDuration]
-                print("All in all, the hybrid trip takes at least {}.".format(printTime(min(totalDuration))))
+            
+            optimizeByLength(advice, mapObj, uberObj)
+            print("\n")            
+            optimizeByTime(advice, mapObj, uberObj)
 
     # __ Cost for UBER only __ #
     print("\nIn contrast, taking an Uber straight to the destination costs")
@@ -87,5 +66,5 @@ def main(origin, destination, departAt = datetime.now()):
     # DEBUG: return API queries for examination and understanding '''
     return end2end_directions
 
-dirResult = main(origin = "Hoover / 28th, Los Angeles",
-                 destination= "Robert's Russian Cuisine, CA")
+dirResult = main(origin = "University Regent, Los Angeles",
+                 destination= "Hodori, Vermont Avenue, Los Angeles")

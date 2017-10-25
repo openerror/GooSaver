@@ -5,22 +5,11 @@ Custom wrappers for Google Maps API
 """
 
 import googlemaps
-from datetime import date, datetime
 
 class MapWrapper(object):
     def __init__(self, key):
         self.key = key
         self.gmaps = googlemaps.Client(key)
-
-    def optimize_length(self, advice):
-        steps, durations, distances = self.extractSteps(advice)
-        
-        maxDistance = max(distances)
-        maxDistanceIndex = distances.index(maxDistance)
-        print("The longest trip (by distance) is segment %i" %(maxDistanceIndex+1))
-
-    def optimize_time(self, advice):
-        pass
 
     def geocode(self, place):
         ''' place is a string (address or building name etc) '''
