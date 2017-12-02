@@ -1,4 +1,4 @@
-from misc import printUberPrices, printTime, displayTrip
+from misc import printUberPrices, printTime
 from time import time
 import gmplot, polyline
 
@@ -8,20 +8,22 @@ import gmplot, polyline
 '''
 
 def publicTransitOnly(advice):
-    ''' Called at the beginning of each run.
-        Purpose: display info of a public transit only trip, for contrast
+    ''' 
+        Purpose: Retrieve info of a public transit only trip, for contrast
                  with the program's suggestions
+                 
+                 advice: Google's API returns suggestions contained in a list; 
+                         advice is an entry in that list
     '''
     
-    end2end_duration = advice['legs'][0]['duration']['value']
-    msg = "Using only public transit, the entire trip takes {}.\n".format(printTime(end2end_duration))
+    # "duration" for determining whether it's a short trip;
+    # "steps", for in case it's a short trip and suggestions need to be displayed
+    transitOnly_tripInfo = {}
+    transitOnly_tripInfo["duration"] = advice['legs'][0]['duration']['value']
+    transitOnly_tripInfo["steps"] = advice['legs'][0]['steps']
+        
+    return transitOnly_tripInfo
     
-    if end2end_duration < 2100: # 35 min = 2100 secs
-        msg += "This is a short trip; perhaps you should take it?\n"
-        msg += displayTrip(advice)
-        return (True, msg)
-    else:
-        return (False, msg)
     
 def optimize(advice, mapObj, uberObj, method = "time"):
     ''' 

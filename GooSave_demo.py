@@ -1,8 +1,8 @@
 from datetime import datetime
 from UberWrapper import UberWrapper
 from MapWrapper import MapWrapper
-from misc import printUberPrices, displayTrip
-from methods import optimize
+from misc import printUberPrices, displayTrip, printTime
+from methods import optimize, publicTransitOnly
 
 uber_token="wisG3tcaRLg2sFZ49g042Bi47RvoOgDWXs-avv8h"
 google_key="AIzaSyD6n0hcRjovaiDrMOhgFuk4iGA7SjJOS0U"
@@ -22,33 +22,18 @@ def main(origin, destination, departAt = datetime.now()):
     assert len(end2end_directions) > 0, "Google returns no suggestions. Exiting."
     print("Google has returned {} trip suggestion(s)\n".format(len(end2end_directions)))
 
-    # Analyze the results, and recommend any trips that take less than 30 mins
-    shortTripFound = False
+    # Analyze the results, and recommend any trips that take less than 30 mins    
     for advice in end2end_directions:
-        totalDuration = advice['legs'][0]['duration']['value']
-        if totalDuration <= 2100:
+        transitOnly_tripInfo = publicTransitOnly(advice)
+        transitOnly_duration = transitOnly_tripInfo["duration"]
+        
+        # Encourages use of public transit only, for shorter trips
+        if (transitOnly_duration <= 2100):
             print("Trip lasting less than 35 mins found.")
-            displayTrip(advice); shortTripFound = True
-            print("\n")
-
-    if shortTripFound:
-        return dirResult, None
-    else:
-        for advice in end2end_directions:
+            return dirResult, transitOnly_tripInfo
+        else:
             hybrid_tripInfo = optimize(advice, mapObj, uberObj, method = "distance")
-
-            # Display info regarding public-transit-only trip, for comparison
-#            end2end_duration = advice['legs'][0]['duration']['value']
-#            steps, durations, distances = mapObj.extractSteps(advice) 
-#
-#            longestStepDuration = max(durations)
-#            longestStepIndex = durations.index(longestStepDuration)
-#            mode = mapObj.extractTransportMode(steps, longestStepIndex)
-#            
-#            print("Using only public transit, the entire trip takes {}.".format(printTime(end2end_duration)))
-#            print("Segment {} takes the longest, at {}, using {}.".format(longestStepIndex+1,
-#                                                                         printTime(longestStepDuration),
-#                                                                         mode))
+            print("If you use only public transit, the entire trip takes {}.".format(printTime(transitOnly_duration)))
 
     # __ Cost for UBER only __ #
     print("\nIn contrast, taking an Uber straight to the destination costs")
@@ -58,5 +43,5 @@ def main(origin, destination, departAt = datetime.now()):
     # DEBUG: return API queries for examination and understanding '''
     return end2end_directions, hybrid_tripInfo 
 
-dirResult, hybrid_tripInfo = main(origin = "University Regent, Los Angeles",
-                                  destination= "Santa Monica, Los Angeles")
+dirResult, hybrid_tripInfo = main(origin = "University of Southern California, Los Angeles",
+                                  destination= "Hodori, Vermont Avenue, Los Angeles")
