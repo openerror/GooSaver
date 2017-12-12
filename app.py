@@ -17,9 +17,15 @@ gmapObj = MapWrapper(google_key)
 uberObj = UberWrapper(uber_token)
 
 #___Code begins below___#
+text_style = dict(color="#444", fontFamily="sans-serif", fontWeight=300)
+newline = html.P("\n")
+                  
 app = dash.Dash()
 app.layout = html.Div([
+                html.H2(id = "welcome", children = "Welcome to GooSaver!", style = text_style),
+                html.P("Please enter the origin and destination below", style=text_style),
                 dcc.Input(id='origin', value='Origin here', type="text"),
+                newline,
                 dcc.Input(id='dest', value='Destination here', type="text"),
                 html.Button(id="submit_query", children="Obtain results"),
                 html.Div(id = "output")
@@ -38,8 +44,6 @@ def parse_hybrid(click, origin, destination):
     # Load a dict --- from file or from API calls
     advice = gmapObj.queryTrip(origin, destination, departAt = datetime.now())
     tripInfo = optimize(advice[0], gmapObj, uberObj, method = "distance")
-#    with open("hybridTripInfo.pickle", "rb") as f:
-#        tripInfo = pickle.load(f)
     
     # Extract the necessary features and give them easy names
     min_duration = printTime( min(tripInfo['total_duration']) )
