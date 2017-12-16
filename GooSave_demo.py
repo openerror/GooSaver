@@ -44,4 +44,4 @@ def main(origin, destination, departAt = datetime.now()):
     return end2end_directions, hybrid_tripInfo 
 
 dirResult, hybrid_tripInfo = main(origin = "University of Southern California, Los Angeles",
-                                  destination= "Hodori, Vermont Avenue, Los Angeles")
+                                  destination= "UCLA, Los Angeles")

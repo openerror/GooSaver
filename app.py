@@ -23,7 +23,7 @@ newline = html.P("\n")
 app = dash.Dash()
 app.layout = html.Div([
                 html.H2(id = "welcome", children = "Welcome to GooSaver!", style = text_style),
-                html.P("Please enter the origin and destination below", style=text_style),
+                html.P("Please enter the origin and destination below. Disclaimer: we cannot guarantee optimal results during rush hours", style=text_style),
                 dcc.Input(id='origin', value='Origin here', type="text"),
                 newline,
                 dcc.Input(id='dest', value='Destination here', type="text"),
@@ -32,8 +32,8 @@ app.layout = html.Div([
                 newline,
                 html.Iframe(id = "map", 
                             src = f"file://test.html",
-                            width = 640,
-                            height = 480)
+                            width = 600,
+                            height = 450)
         ])
     
 @app.callback(
@@ -49,19 +49,20 @@ def parse_hybrid(click, origin, destination):
     
     # Load a dict --- from file or from API calls
     advice = gmapObj.queryTrip(origin, destination, departAt = datetime.now())
-    tripInfo = optimize(advice[0], gmapObj, uberObj, method = "distance")
+    tripInfo = optimize(advice[0], gmapObj, uberObj, method = "duration")
     
     # Extract the necessary features and give them easy names
-    min_duration = printTime( min(tripInfo['total_duration']) )
+    min_duration = printTime( min(tripInfo['total_duration']))
     transit_line = tripInfo['transit_line_connected']
     begin_station = tripInfo['begin_station']
     end_station = tripInfo['end_station']
     uber_prices = tripInfo['uber_prices']
+    final_leg_dist = tripInfo['final_leg_dist']
             
     return html.Div([
                 html.H3("GooSaver Trip Duration: {}\n".format(min_duration)),
                 html.P("Take Uber and connect to {} @ {}\n".format(transit_line, begin_station)),
-                html.Div("Get off at {}, ... \n\n".format(end_station)),
+                html.Div("Get off at {}, which is {} away from the destination \n\n".format(end_station, final_leg_dist)),
                 html.Div([
                             html.H3("Uber Cost"),
                             html.Ul("\t Pool: {}".format(uber_prices[0]['POOL'])),

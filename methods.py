@@ -34,7 +34,8 @@ def optimize(advice, mapObj, uberObj, method = "duration"):
     hybrid_tripInfo = dict(total_duration=0.0, uber_prices=[],
                            transit_line_connected="",
                            begin_station="",
-                           end_station="")
+                           end_station="",
+                           final_leg_dist="")
 
     # Retrieve the latitudes and longitudes of origin and destination, for later use
     coordKeys = ('lat', 'lng')
@@ -77,6 +78,12 @@ def optimize(advice, mapObj, uberObj, method = "duration"):
 
         total_duration = [(wait + uber_ride_duration + transit_duration + afterUber_duration) for wait in uber_wait_duration]
         
+        # Find out how far the destination is, after getting off public transit
+        dist_matrix = mapObj.gmaps.distance_matrix(steps[transit_index]['end_location'], 
+                                                   steps[-1]['end_location'], 
+                                                   mode = "walking")
+        final_leg_dist = dist_matrix['rows'][0]['elements'][0]['distance']['text']
+        
         # Testing: generating HTML file with Google Map
 #        gmap = gmplot.GoogleMapPlotter(departLat, departLng, 15)
 #        transit_trace = polyline.decode(steps[transit_index]['polyline']['points'])
@@ -95,6 +102,8 @@ def optimize(advice, mapObj, uberObj, method = "duration"):
         hybrid_tripInfo['begin_station'] = transit_details['departure_stop']['name']
         hybrid_tripInfo['end_station'] = transit_details['arrival_stop']['name']
         hybrid_tripInfo['uber_prices'] = [{product['localized_display_name']: product['estimate']} for product in replacement_est]
+        hybrid_tripInfo['final_leg_dist'] = final_leg_dist
+        
         if transit_details['line']['name'] in ["Metro Local Line", "Metro Rapid Line"]:
             hybrid_tripInfo['transit_line_connected'] = transit_details['line']['name'] + f" {transit_details['line']['short_name']}"
         else:
