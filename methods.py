@@ -101,7 +101,7 @@ def optimize(advice, mapObj, uberObj, method = "duration"):
         hybrid_tripInfo['total_duration'] = total_duration
         hybrid_tripInfo['begin_station'] = transit_details['departure_stop']['name']
         hybrid_tripInfo['end_station'] = transit_details['arrival_stop']['name']
-        hybrid_tripInfo['uber_prices'] = [{product['localized_display_name']: product['estimate']} for product in replacement_est]
+        hybrid_tripInfo['uber_prices'] = {product['localized_display_name']: product['estimate'] for product in replacement_est}
         hybrid_tripInfo['final_leg_dist'] = final_leg_dist
         
         if transit_details['line']['name'] in ["Metro Local Line", "Metro Rapid Line"]:
