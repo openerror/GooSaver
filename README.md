@@ -9,9 +9,9 @@ Here is a test case for within Los Angeles, measured at 5:30pm on a Sunday. Abou
 
 1. University of Southern California -> Pasadena Convention Center
 
-![alt text](UserCase1")
+![UserCase1.png](UserCase1.png")
 
 #### Possible Further Developments
 It's not that we prefer Uber over other services, but Uber's API is the most accessible of all from Python. When possible, we would like to incorporate e.g. Lyft, too.
 
-Also, right now the map is displaying public-transit-only suggestions from Google. While they are useful for comparison to GooSaver's *text* output, ideally we would like to see it describe the trip suggested by GooSaver instead.
+Also, right now the map is displaying public-transit-only suggestions from Google. While they are useful for comparison to GooSaver's *text* output, ideally we would like to see it depict the GooSaver trip instead.
