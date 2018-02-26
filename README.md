@@ -9,7 +9,7 @@ Here is a test case for within Los Angeles, measured at 5:30pm on a Sunday. Abou
 
 1. University of Southern California -> Pasadena Convention Center
 
-![UserCase1.png](UserCase1.png")
+![UserCase1.png](UserCase1.png)
 
 #### Possible Further Developments
 It's not that we prefer Uber over other services, but Uber's API is the most accessible of all from Python. When possible, we would like to incorporate e.g. Lyft, too.
