@@ -20,7 +20,9 @@ uberObj = UberWrapper(uber_token)
 text_style = dict(color="#444", fontFamily="sans-serif", fontWeight=300)
 newline = html.P("\n")
                   
-app = dash.Dash()
+app = dash.Dash(__name__)
+server = app.server # the Flask app
+
 app.layout = html.Div([
                 html.H2(id = "welcome", children = "Welcome to GooSaver!", style = text_style),
                 html.P("Please enter the origin and destination below. Disclaimer: we cannot guarantee optimal results during rush hours", style=text_style),
@@ -44,12 +46,11 @@ app.layout = html.Div([
      ]
     )
 def parse_hybrid(click, origin, destination):
-    ''' In production code, of course we will make a function call that 
-        returns a dict object ''' 
-    
     # Load a dict --- from file or from API calls
     advice = gmapObj.queryTrip(origin, destination, departAt = datetime.now())
     tripInfo = optimize(advice[0], gmapObj, uberObj, method = "duration")
+    
+    print(tripInfo)
     
     # Extract the necessary features and give them easy names
     min_duration = printTime( min(tripInfo['total_duration']))
@@ -57,7 +58,7 @@ def parse_hybrid(click, origin, destination):
     begin_station = tripInfo['begin_station']
     end_station = tripInfo['end_station']
     uber_prices = tripInfo['uber_prices']
-    final_leg_dist = tripInfo['final_leg_dist']
+    final_leg_dist = tripInfo['final_leg_dist']            
             
     return html.Div([
                 html.H3("GooSaver Trip Duration: {}\n".format(min_duration)),
@@ -65,8 +66,8 @@ def parse_hybrid(click, origin, destination):
                 html.Div("Get off at {}, which is {} away from the destination \n\n".format(end_station, final_leg_dist)),
                 html.Div([
                             html.H3("Uber Cost"),
-                            html.Ul("\t Pool: {}".format(uber_prices[0]['POOL'])),
-                            html.Ul("\t UberX {}".format(uber_prices[1]['uberX']))
+                            html.Ul("\t Pool: {}".format(uber_prices['POOL'])),
+                            html.Ul("\t UberX {}".format(uber_prices['uberX']))
                         ])
             ])
 
